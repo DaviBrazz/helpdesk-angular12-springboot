@@ -105,6 +105,4 @@ public abstract class Pessoa {
 		Pessoa other = (Pessoa) obj;
 		return Objects.equals(cpf, other.cpf) && Objects.equals(id, other.id);
 	}
-	
-	
 }

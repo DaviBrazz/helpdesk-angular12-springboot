@@ -10,8 +10,8 @@ services:
     environment:
       MYSQL_DATABASE: helpdeskdb
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
+      MYSQL_USER: helpdesk
+      MYSQL_PASSWORD: helpdesk
     volumes:
       - mysql_data:/var/lib/mysql
 

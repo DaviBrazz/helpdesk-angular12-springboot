@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.swing.text.html.Option;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -19,5 +20,9 @@ public class TecnicoService {
         Optional<Tecnico> tecnico = tecnicoRepository.findById(id);
 
         return tecnico.orElseThrow(() -> new ObjectNotFoundException("Objeto não encontrado! ID:" + id));
+    }
+
+    public List<Tecnico> findAll() {
+        return tecnicoRepository.findAll();
     }
 }

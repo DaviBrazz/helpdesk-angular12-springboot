@@ -3,6 +3,8 @@ package com.project.helpdesk.domain.dtos;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.project.helpdesk.domain.Tecnico;
 import com.project.helpdesk.domain.enums.Perfil;
+import jakarta.validation.constraints.NotNull;
+
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -14,10 +16,19 @@ public class TecnicoDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     protected Integer id;
+
+    @NotNull(message = "O campo NOME não pode ser vazio!")
     protected String nome;
+
+    @NotNull(message = "O campo CPF não pode ser vazio!")
     protected String cpf;
+
+    @NotNull(message = "O campo EMAIL não pode ser vazio!")
     protected String email;
+
+    @NotNull(message = "O campo SENHA não pode ser vazio!")
     protected String senha;
+
     protected Set<Integer> perfis = new HashSet<>();
 
     @JsonFormat(pattern = "dd/MM/yyyy")

@@ -2,6 +2,7 @@ package com.project.helpdesk.domain.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.project.helpdesk.domain.Chamado;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -14,11 +15,22 @@ public class ChamadoDTO implements Serializable {
     private LocalDate dataAbertura = LocalDate.now();
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataFechamento;
+
+    @NotNull(message = "O campo PRIORIDADE não pode ser vazio")
     private Integer prioridade;
+
+    @NotNull(message = "O campo STATUS não pode ser vazio")
     private Integer status;
+
+    @NotNull(message = "O campo TÍTULO não pode ser vazio")
     private String titulo;
+
     private String observacoes;
+
+    @NotNull(message = "O campo TÉCNICO não pode ser vazio")
     private Integer tecnico;
+
+    @NotNull(message = "O campo CLIENTE não pode ser vazio")
     private Integer cliente;
     private String nomeTecnico;
     private String nomeCliente;

@@ -1,13 +1,15 @@
 package com.project.helpdesk.services;
 
+import com.project.helpdesk.domain.Pessoa;
 import com.project.helpdesk.domain.Tecnico;
 import com.project.helpdesk.domain.dtos.TecnicoDTO;
+import com.project.helpdesk.repositories.PessoaRepository;
 import com.project.helpdesk.repositories.TecnicoRepository;
+import com.project.helpdesk.services.exceptions.DataIntegrityViolationException;
 import com.project.helpdesk.services.exceptions.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,10 +19,13 @@ public class TecnicoService {
     @Autowired
     private TecnicoRepository tecnicoRepository;
 
-    public Tecnico findById(Integer id) {
-        Optional<Tecnico> tecnico = tecnicoRepository.findById(id);
+    @Autowired
+    private PessoaRepository pessoaRepository;
 
-        return tecnico.orElseThrow(() -> new ObjectNotFoundException("Objeto não encontrado! ID:" + id));
+    public Tecnico findById(Integer id) {
+        return tecnicoRepository.findById(id)
+                .orElseThrow(() ->
+                        new ObjectNotFoundException("Objeto não encontrado! ID: " + id));
     }
 
     public List<Tecnico> findAll() {
@@ -28,8 +33,26 @@ public class TecnicoService {
     }
 
     public Tecnico create(TecnicoDTO tecnicoDTO) {
-        Tecnico novoTecnico = new Tecnico(tecnicoDTO);
         tecnicoDTO.setId(null);
+        validaCpf(tecnicoDTO);
+        validaEmail(tecnicoDTO);
+        Tecnico novoTecnico = new Tecnico(tecnicoDTO);
         return tecnicoRepository.save(novoTecnico);
+    }
+
+    private void validaCpf(TecnicoDTO tecnicoDTO) {
+        pessoaRepository.findByCpf(tecnicoDTO.getCpf())
+                .filter(pessoa -> !pessoa.getId().equals(tecnicoDTO.getId()))
+                .ifPresent(pessoa -> {
+                    throw new DataIntegrityViolationException("CPF já cadastrado no sistema!");
+                });
+    }
+
+    private void validaEmail(TecnicoDTO dto) {
+        pessoaRepository.findByEmail(dto.getEmail())
+                .filter(pessoa -> !pessoa.getId().equals(dto.getId()))
+                .ifPresent(pessoa -> {
+                    throw new DataIntegrityViolationException("Email já cadastrado no sistema!");
+                });
     }
 }

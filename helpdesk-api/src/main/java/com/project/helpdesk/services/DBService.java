@@ -28,10 +28,10 @@ public class DBService {
 
     public void instanciaDB() {
 
-        Tecnico tecnico1 = new Tecnico(null, "Valdir Cezar", "12398734576", "valdircezar@yahoo.com", "thebigvaldir");
+        Tecnico tecnico1 = new Tecnico(null, "Valdir Cezar", "39053344705", "valdircezar@yahoo.com", "thebigvaldir");
         tecnico1.addPerfil(Perfil.ADMIN);
 
-        Cliente cliente1 = new Cliente(null, "Ernesto Freitas Barros","88733466578","ernestob@gmail.com", "432");
+        Cliente cliente1 = new Cliente(null, "Ernesto Freitas Barros","52998224725","ernestob@gmail.com", "432");
         cliente1.addPerfil(Perfil.CLIENTE);
 
         Chamado chamado1 = new Chamado(null, Prioridade.MEDIA, Status.ANDAMENTO,"Chamado 01", "Primeiro chamado", tecnico1, cliente1);

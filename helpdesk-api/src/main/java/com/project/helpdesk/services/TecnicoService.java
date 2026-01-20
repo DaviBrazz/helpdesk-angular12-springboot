@@ -7,6 +7,7 @@ import com.project.helpdesk.repositories.PessoaRepository;
 import com.project.helpdesk.repositories.TecnicoRepository;
 import com.project.helpdesk.services.exceptions.DataIntegrityViolationException;
 import com.project.helpdesk.services.exceptions.ObjectNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,5 +55,14 @@ public class TecnicoService {
                 .ifPresent(pessoa -> {
                     throw new DataIntegrityViolationException("Email já cadastrado no sistema!");
                 });
+    }
+
+    public Tecnico update(Integer id, @Valid TecnicoDTO tecnicoDTO) {
+        tecnicoDTO.setId(id);
+        Tecnico tecnico = findById(id);
+        validaCpf(tecnicoDTO);
+        validaEmail(tecnicoDTO);
+        tecnico = new Tecnico(tecnicoDTO);
+        return tecnicoRepository.save(tecnico);
     }
 }

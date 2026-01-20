@@ -41,4 +41,10 @@ public class TecnicoResource {
         return ResponseEntity.created(uri).build();
 
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TecnicoDTO> update(@PathVariable Integer id, @Valid @RequestBody TecnicoDTO tecnicoDTO) {
+        Tecnico tecnico = tecnicoService.update(id, tecnicoDTO);
+        return ResponseEntity.ok().body(new TecnicoDTO(tecnico));
+    }
 }

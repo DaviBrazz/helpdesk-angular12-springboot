@@ -18,6 +18,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import org.hibernate.validator.constraints.br.CPF;
+
 
 @Entity
 public abstract class Pessoa implements Serializable {
@@ -29,7 +31,8 @@ public abstract class Pessoa implements Serializable {
 	protected Integer id;
 	
 	protected String nome;
-	
+
+    @CPF
 	@Column(unique = true)
 	protected String cpf;
 	protected String email;

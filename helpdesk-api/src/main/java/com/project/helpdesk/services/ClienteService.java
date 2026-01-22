@@ -8,6 +8,7 @@ import com.project.helpdesk.services.exceptions.DataIntegrityViolationException;
 import com.project.helpdesk.services.exceptions.ObjectNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +22,9 @@ public class ClienteService {
     @Autowired
     private PessoaRepository pessoaRepository;
 
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
     public Cliente findById(Integer id) {
         return ClienteRepository.findById(id)
                 .orElseThrow(() ->
@@ -33,27 +37,13 @@ public class ClienteService {
 
     public Cliente create(ClienteDTO clienteDTO) {
         clienteDTO.setId(null);
+        clienteDTO.setSenha(bCryptPasswordEncoder.encode(clienteDTO.getSenha()));
         validaCpf(clienteDTO);
         validaEmail(clienteDTO);
         Cliente novoCliente = new Cliente(clienteDTO);
         return ClienteRepository.save(novoCliente);
     }
 
-    private void validaCpf(ClienteDTO clienteDTO) {
-        pessoaRepository.findByCpf(clienteDTO.getCpf())
-                .filter(pessoa -> !pessoa.getId().equals(clienteDTO.getId()))
-                .ifPresent(pessoa -> {
-                    throw new DataIntegrityViolationException("CPF já cadastrado no sistema!");
-                });
-    }
-
-    private void validaEmail(ClienteDTO clienteDTO) {
-        pessoaRepository.findByEmail(clienteDTO.getEmail())
-                .filter(pessoa -> !pessoa.getId().equals(clienteDTO.getId()))
-                .ifPresent(pessoa -> {
-                    throw new DataIntegrityViolationException("Email já cadastrado no sistema!");
-                });
-    }
 
     public Cliente update(Integer id, @Valid ClienteDTO clienteDTO) {
         clienteDTO.setId(id);
@@ -71,4 +61,20 @@ public class ClienteService {
         }
         ClienteRepository.deleteById(id);
     }
+    private void validaCpf(ClienteDTO clienteDTO) {
+        pessoaRepository.findByCpf(clienteDTO.getCpf())
+                .filter(pessoa -> !pessoa.getId().equals(clienteDTO.getId()))
+                .ifPresent(pessoa -> {
+                    throw new DataIntegrityViolationException("CPF já cadastrado no sistema!");
+                });
+    }
+
+    private void validaEmail(ClienteDTO clienteDTO) {
+        pessoaRepository.findByEmail(clienteDTO.getEmail())
+                .filter(pessoa -> !pessoa.getId().equals(clienteDTO.getId()))
+                .ifPresent(pessoa -> {
+                    throw new DataIntegrityViolationException("Email já cadastrado no sistema!");
+                });
+    }
+
 }

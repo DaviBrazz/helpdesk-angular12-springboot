@@ -9,6 +9,7 @@ import com.project.helpdesk.services.exceptions.DataIntegrityViolationException;
 import com.project.helpdesk.services.exceptions.ObjectNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +24,9 @@ public class TecnicoService {
     @Autowired
     private PessoaRepository pessoaRepository;
 
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
     public Tecnico findById(Integer id) {
         return tecnicoRepository.findById(id)
                 .orElseThrow(() ->
@@ -35,27 +39,13 @@ public class TecnicoService {
 
     public Tecnico create(TecnicoDTO tecnicoDTO) {
         tecnicoDTO.setId(null);
+        tecnicoDTO.setSenha(bCryptPasswordEncoder.encode(tecnicoDTO.getSenha()));
         validaCpf(tecnicoDTO);
         validaEmail(tecnicoDTO);
         Tecnico novoTecnico = new Tecnico(tecnicoDTO);
         return tecnicoRepository.save(novoTecnico);
     }
 
-    private void validaCpf(TecnicoDTO tecnicoDTO) {
-        pessoaRepository.findByCpf(tecnicoDTO.getCpf())
-                .filter(pessoa -> !pessoa.getId().equals(tecnicoDTO.getId()))
-                .ifPresent(pessoa -> {
-                    throw new DataIntegrityViolationException("CPF já cadastrado no sistema!");
-                });
-    }
-
-    private void validaEmail(TecnicoDTO dto) {
-        pessoaRepository.findByEmail(dto.getEmail())
-                .filter(pessoa -> !pessoa.getId().equals(dto.getId()))
-                .ifPresent(pessoa -> {
-                    throw new DataIntegrityViolationException("Email já cadastrado no sistema!");
-                });
-    }
 
     public Tecnico update(Integer id, @Valid TecnicoDTO tecnicoDTO) {
         tecnicoDTO.setId(id);
@@ -72,5 +62,21 @@ public class TecnicoService {
             throw new DataIntegrityViolationException("O Técnico possui ordens de serviços e não pode ser deletado!");
         }
         tecnicoRepository.deleteById(id);
+    }
+
+    private void validaCpf(TecnicoDTO tecnicoDTO) {
+        pessoaRepository.findByCpf(tecnicoDTO.getCpf())
+                .filter(pessoa -> !pessoa.getId().equals(tecnicoDTO.getId()))
+                .ifPresent(pessoa -> {
+                    throw new DataIntegrityViolationException("CPF já cadastrado no sistema!");
+                });
+    }
+
+    private void validaEmail(TecnicoDTO dto) {
+        pessoaRepository.findByEmail(dto.getEmail())
+                .filter(pessoa -> !pessoa.getId().equals(dto.getId()))
+                .ifPresent(pessoa -> {
+                    throw new DataIntegrityViolationException("Email já cadastrado no sistema!");
+                });
     }
 }

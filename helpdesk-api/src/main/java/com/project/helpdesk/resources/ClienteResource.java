@@ -6,6 +6,7 @@ import com.project.helpdesk.services.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -14,42 +15,55 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "/clientes")
+@RequestMapping("/clientes")
 public class ClienteResource {
 
     @Autowired
     private ClienteService clienteService;
 
-    @GetMapping(value = "/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ClienteDTO> findById(@PathVariable Integer id) {
-        Cliente  cliente = clienteService.findById(id);
-        return ResponseEntity.ok().body(new ClienteDTO(cliente));
+        Cliente cliente = clienteService.findById(id);
+        return ResponseEntity.ok(new ClienteDTO(cliente));
     }
 
     @GetMapping
     public ResponseEntity<List<ClienteDTO>> findAll() {
-        List<Cliente> list = clienteService.findAll();
-        List<ClienteDTO> listDTO = list.stream().map(obj -> new ClienteDTO(obj)).collect(Collectors.toList());
+        List<ClienteDTO> listDTO = clienteService.findAll()
+                .stream()
+                .map(ClienteDTO::new)
+                .collect(Collectors.toList());
 
-        return ResponseEntity.ok().body(listDTO);
+        return ResponseEntity.ok(listDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<ClienteDTO> create(@Valid @RequestBody ClienteDTO ClienteDTO) {
-        Cliente novoCliente = clienteService.create(ClienteDTO);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(novoCliente.getId()).toUri();
+    public ResponseEntity<Void> create(@Valid @RequestBody ClienteDTO dto) {
+        Cliente cliente = clienteService.create(dto);
+
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(cliente.getId())
+                .toUri();
+
         return ResponseEntity.created(uri).build();
-
     }
 
-    @PutMapping(value = "/{id}")
-    public ResponseEntity<ClienteDTO> update(@PathVariable Integer id, @Valid @RequestBody ClienteDTO clienteDTO) {
-        Cliente cliente = clienteService.update(id, clienteDTO);
-        return ResponseEntity.ok().body(new ClienteDTO(cliente));
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ClienteDTO> update(
+            @PathVariable Integer id,
+            @Valid @RequestBody ClienteDTO dto) {
+
+        Cliente cliente = clienteService.update(id, dto);
+        return ResponseEntity.ok(new ClienteDTO(cliente));
     }
 
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<ClienteDTO> delete(@PathVariable Integer id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         clienteService.delete(id);
         return ResponseEntity.noContent().build();
     }

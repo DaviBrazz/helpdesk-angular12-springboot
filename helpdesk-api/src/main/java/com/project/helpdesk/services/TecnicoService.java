@@ -1,6 +1,5 @@
 package com.project.helpdesk.services;
 
-import com.project.helpdesk.domain.Pessoa;
 import com.project.helpdesk.domain.Tecnico;
 import com.project.helpdesk.domain.dtos.TecnicoDTO;
 import com.project.helpdesk.repositories.PessoaRepository;
@@ -9,10 +8,10 @@ import com.project.helpdesk.services.exceptions.DataIntegrityViolationException;
 import com.project.helpdesk.services.exceptions.ObjectNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TecnicoService {
@@ -22,6 +21,9 @@ public class TecnicoService {
 
     @Autowired
     private PessoaRepository pessoaRepository;
+
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public Tecnico findById(Integer id) {
         return tecnicoRepository.findById(id)
@@ -33,44 +35,64 @@ public class TecnicoService {
         return tecnicoRepository.findAll();
     }
 
-    public Tecnico create(TecnicoDTO tecnicoDTO) {
-        tecnicoDTO.setId(null);
-        validaCpf(tecnicoDTO);
-        validaEmail(tecnicoDTO);
-        Tecnico novoTecnico = new Tecnico(tecnicoDTO);
-        return tecnicoRepository.save(novoTecnico);
+    public Tecnico create(@Valid TecnicoDTO dto) {
+        dto.setId(null);
+        dto.setSenha(bCryptPasswordEncoder.encode(dto.getSenha()));
+
+        validaCpf(dto);
+        validaEmail(dto);
+
+        Tecnico tecnico = new Tecnico(dto);
+        return tecnicoRepository.save(tecnico);
     }
 
-    private void validaCpf(TecnicoDTO tecnicoDTO) {
-        pessoaRepository.findByCpf(tecnicoDTO.getCpf())
-                .filter(pessoa -> !pessoa.getId().equals(tecnicoDTO.getId()))
-                .ifPresent(pessoa -> {
-                    throw new DataIntegrityViolationException("CPF já cadastrado no sistema!");
-                });
-    }
-
-    private void validaEmail(TecnicoDTO dto) {
-        pessoaRepository.findByEmail(dto.getEmail())
-                .filter(pessoa -> !pessoa.getId().equals(dto.getId()))
-                .ifPresent(pessoa -> {
-                    throw new DataIntegrityViolationException("Email já cadastrado no sistema!");
-                });
-    }
-
-    public Tecnico update(Integer id, @Valid TecnicoDTO tecnicoDTO) {
-        tecnicoDTO.setId(id);
+    public Tecnico update(Integer id, @Valid TecnicoDTO dto) {
         Tecnico tecnico = findById(id);
-        validaCpf(tecnicoDTO);
-        validaEmail(tecnicoDTO);
-        tecnico = new Tecnico(tecnicoDTO);
+
+        if (!dto.getCpf().equals(tecnico.getCpf())) {
+            validaCpf(dto);
+            tecnico.setCpf(dto.getCpf());
+        }
+
+        if (!dto.getEmail().equals(tecnico.getEmail())) {
+            validaEmail(dto);
+            tecnico.setEmail(dto.getEmail());
+        }
+
+        tecnico.setNome(dto.getNome());
+
+        if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
+            tecnico.setSenha(bCryptPasswordEncoder.encode(dto.getSenha()));
+        }
         return tecnicoRepository.save(tecnico);
     }
 
     public void delete(Integer id) {
         Tecnico tecnico = findById(id);
-        if (tecnico.getChamados().size() > 0) {
-            throw new DataIntegrityViolationException("O Técnico possui ordens de serviços e não pode ser deletado!");
+
+        if (!tecnico.getChamados().isEmpty()) {
+            throw new DataIntegrityViolationException(
+                    "O Técnico possui ordens de serviço e não pode ser deletado!"
+            );
         }
         tecnicoRepository.deleteById(id);
+    }
+
+    private void validaCpf(TecnicoDTO dto) {
+        pessoaRepository.findByCpf(dto.getCpf())
+                .ifPresent(pessoa -> {
+                    if (!pessoa.getId().equals(dto.getId())) {
+                        throw new DataIntegrityViolationException("CPF já cadastrado no sistema!");
+                    }
+                });
+    }
+
+    private void validaEmail(TecnicoDTO dto) {
+        pessoaRepository.findByEmail(dto.getEmail())
+                .ifPresent(pessoa -> {
+                    if (!pessoa.getId().equals(dto.getId())) {
+                        throw new DataIntegrityViolationException("Email já cadastrado no sistema!");
+                    }
+                });
     }
 }

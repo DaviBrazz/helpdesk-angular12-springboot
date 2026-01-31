@@ -28,6 +28,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card';
 import { NavComponent } from './components/nav/nav.component';
 import { HomeComponent } from './components/home/home.component';
+import { HeaderComponent } from './components/header/header.component';
 
 // Componentes do projeto
 
@@ -37,7 +38,8 @@ import { HomeComponent } from './components/home/home.component';
   declarations: [
     AppComponent,
     NavComponent,
-    HomeComponent
+    HomeComponent,
+    HeaderComponent
   ],
    imports: [
     BrowserModule,
